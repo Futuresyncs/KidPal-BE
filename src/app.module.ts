@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
-import { JwtStrategyService } from './jwt-strategy/jwt-strategy.service';
+import { JwtStrategyService } from './strategies/jwt-strategy.service';
 import { ProfileController } from './profile/profile.controller';
 
 @Module({
