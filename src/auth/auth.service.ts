@@ -43,8 +43,32 @@ export class AuthService {
     return this.generateToken(user.id, user.email);
   }
 
+
+  async googleLogin(user: any) {
+    console.log(user)
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: user.email },
+    });
+
+    if (!existingUser) {
+      // Create a new user if not already in the database
+      const newUser = await this.prisma.user.create({
+        data: {
+          email: user.email,
+          password: user.password
+        },
+      });
+
+      return this.generateToken(newUser.id, newUser.email);
+    }
+
+    // If the user exists, generate a token
+    return this.generateToken(existingUser.id, existingUser.email);
+  }
+
+
   private generateToken(userId: number, email: string) {
-    const payload = { sub: userId, email };
+    const payload = { userId, email };
     return {
       access_token: this.jwtService.sign(payload),
     };
