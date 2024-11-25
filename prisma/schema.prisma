@@ -28,3 +28,12 @@ model User {
   password  String
   createdAt DateTime @default(now())
 }
+
+
+model Audio {
+  id        Int      @id @default(autoincrement())
+  input     String
+  voice     String
+  url       String
+  createdAt DateTime @default(now())
+}
