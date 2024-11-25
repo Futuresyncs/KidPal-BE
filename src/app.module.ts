@@ -8,9 +8,10 @@ import { JwtStrategyService } from './strategies/jwt-strategy.service';
 import { ProfileController } from './profile/profile.controller';
 import { AudioService } from './audio/audio.service';
 import { AudioController } from './audio/audio.controller';
+import { ReportModule } from './report/report.module';
 
 @Module({
-  imports: [UsersModule, PrismaModule, AuthModule],
+  imports: [UsersModule, PrismaModule, AuthModule, ReportModule],
   controllers: [AppController,ProfileController, AudioController],
   providers: [AppService, JwtStrategyService, AudioService],
 })

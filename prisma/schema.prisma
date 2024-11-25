@@ -16,6 +16,15 @@ model Employee {
   updatedAt DateTime @updatedAt
 }
 
+model Report {
+  id                Int      @id @default(autoincrement())
+  child_id          String
+  session_summary   String
+  conversation_logs Json
+  progress_data     Json
+  createdAt         DateTime @default(now())
+}
+
 enum Role {
   Viewer
   Admin
@@ -27,8 +36,8 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
 
 model Audio {
   id        Int      @id @default(autoincrement())
