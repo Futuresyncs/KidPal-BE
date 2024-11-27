@@ -6,16 +6,20 @@ export class AudioController {
   constructor(private readonly audioService: AudioService) {}
 
   @Post('generate')
-  async generateAudio(@Body() body: { input: string; voice: string }) {
-    const { input, voice } = body;
+  async generateAudio(@Body() body: { input: string; voice: string,isSample?:boolean }) {
+    const { input, voice,isSample } = body;
     return {
-      url: await this.audioService.generateAudio(input, voice),
+      url: await this.audioService.generateAudio(input, voice,isSample),
     };
   }
 
   @Get('history')
   async getAudioHistory() {
     return this.audioService.getAudioHistory();
+  }
+  @Get('samples')
+  async getAudioSample() {
+    return this.audioService.getAudioSample();
   }
 
   @Delete(':id')

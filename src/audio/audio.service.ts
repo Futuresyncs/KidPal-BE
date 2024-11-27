@@ -11,7 +11,7 @@ export class AudioService {
   private readonly OPENAI_API_URL = process.env.OPENAI_API_URL;
   private readonly OPENAI_API_TOKEN = process.env.OPENAI_API_TOKEN;
 
-  async generateAudio(input: string, voice: string): Promise<string> {
+  async generateAudio(input: string, voice: string,isSample?:boolean): Promise<string> {
     try {
       const response = await axios.post(
         this.OPENAI_API_URL,
@@ -43,6 +43,7 @@ export class AudioService {
         data: {
           input,
           voice,
+          isSample: isSample,
           url: audioUrl,
         },
       });
@@ -94,6 +95,12 @@ export class AudioService {
       orderBy: {
         createdAt: 'desc',
       },
+    });
+  }
+  async getAudioSample() {
+    return this.prisma.audio.findMany({
+      where: { isSample: true },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }
