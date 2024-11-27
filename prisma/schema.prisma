@@ -23,6 +23,7 @@ model Report {
   conversation_logs Json
   progress_data     Json
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 enum Role {
