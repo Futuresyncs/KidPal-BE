@@ -7,21 +7,31 @@ export class ReportService {
   private prisma = new PrismaClient();
 
   async create(report: CreateReportDto) {
+    // Validate if the provided child_id exists
+    const child = await this.prisma.child_Profile.findUnique({
+      where: { id: report.child_id },
+    });
+  
+    if (!child) {
+      throw new NotFoundException(`Child with ID ${report.child_id} does not exist`);
+    }
+  
+    // Proceed to create the report
     const newReport = await this.prisma.report.create({
       data: {
-        child_id: report.child_id,
+        child_id: child.id, // Ensure you're referencing the correct `id`
         session_summary: report.session_summary,
         conversation_logs: JSON.parse(JSON.stringify(report.conversation_logs)),
         progress_data: JSON.parse(JSON.stringify(report.progress_data)),
-        createdAt: new Date(),
       },
     });
-
+  
     return {
       message: 'Report created successfully',
       report: newReport,
     };
   }
+  
 
   async getAll() {
     const reports = await this.prisma.report.findMany();

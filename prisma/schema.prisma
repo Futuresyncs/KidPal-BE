@@ -18,22 +18,25 @@ model Employee {
 
 model Report {
   id                Int      @id @default(autoincrement())
-  child_id          String
+  child_id          Int
   session_summary   String
   conversation_logs Json
   progress_data     Json
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  child_profile     Child_Profile @relation(fields: [child_id], references:[id])
 }
 
 model Child_Profile {
   id           Int      @id @default(autoincrement())
-  Parent_id    String
+  parent_id    Int      
   nickName     String
   age          Int
   character_id String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  report       Report[]
+  user         User     @relation(fields: [parent_id], references: [id]) 
 }
 
 enum Role {
@@ -48,6 +51,7 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  child_Profile Child_Profile[]
 }
 
 model Audio {

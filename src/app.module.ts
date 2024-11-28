@@ -9,9 +9,10 @@ import { ProfileController } from './profile/profile.controller';
 import { AudioService } from './audio/audio.service';
 import { AudioController } from './audio/audio.controller';
 import { ReportModule } from './report/report.module';
+import { ChildProfileModule } from './child-profile/child-profile.module';
 
 @Module({
-  imports: [UsersModule, PrismaModule, AuthModule, ReportModule],
+  imports: [UsersModule, PrismaModule, AuthModule, ReportModule, ChildProfileModule],
   controllers: [AppController,ProfileController, AudioController],
   providers: [AppService, JwtStrategyService, AudioService],
 })

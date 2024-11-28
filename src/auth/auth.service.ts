@@ -79,4 +79,10 @@ export class AuthService {
       message,
     };
   }
+
+  async getUsers(){
+    const users = await this.prisma.user.findMany({})
+    return users
+  }
+  
 }

@@ -21,6 +21,12 @@ export class AuthController {
   async googleAuth() {
     // This route initiates the Google OAuth process
   }
+  
+  @Get('users')
+  // @UseGuards(AuthGuard('jwt')) // Trigger Google OAuth
+  async getUsers() {
+    return this.authService.getUsers();
+  }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google')) // Handle Google OAuth callback

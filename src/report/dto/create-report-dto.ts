@@ -1,10 +1,9 @@
-import { IsString, IsNotEmpty, IsArray, ValidateNested, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, ValidateNested, IsInt,IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateReportDto {
-  @IsString()
-  @IsNotEmpty()
-  child_id: string;
+  @IsInt()
+  child_id: number;
 
   @IsString()
   @IsNotEmpty()
@@ -22,9 +21,9 @@ export class CreateReportDto {
 }
 
 export class UpdateReportDto {
-  @IsString()
+  @IsInt()
   @IsOptional()
-  child_id?: string;
+  child_id?: number;
 
   @IsString()
   @IsOptional()
