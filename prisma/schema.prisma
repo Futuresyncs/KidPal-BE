@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"] 
 }
 
 datasource db {
@@ -48,6 +48,7 @@ enum Role {
 
 model User {
   id        Int      @id @default(autoincrement())
+  name      String   
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
@@ -62,4 +63,11 @@ model Audio {
   url       String
   isSample  Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model Otp {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otp       String
+  expiresAt DateTime
 }

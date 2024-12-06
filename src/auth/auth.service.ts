@@ -7,14 +7,13 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class AuthService {
   private prisma = new PrismaClient();
-
   constructor(private readonly jwtService: JwtService) {}
-
-  async signup(email: string, password: string) {
+  async signup(name: string, email: string, password: string) {
     // Check if the email already exists in the database
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -30,11 +29,16 @@ export class AuthService {
 
     // Create the new user
     const user = await this.prisma.user.create({
-      data: { email, password: hashedPassword },
+      data: { name, email, password: hashedPassword },
     });
 
-    // Generate and return the token
-    return this.generateToken(user.id, user.email);
+    const res = {
+      name: user.name,
+      email: user.email,
+      token: this.generateToken(user.id, user.email).access_token,
+    };
+
+    return res;
   }
 
   async login(email: string, password: string) {
@@ -45,7 +49,13 @@ export class AuthService {
     if (!passwordValid)
       throw new UnauthorizedException('Invalid email or password');
 
-    return this.generateToken(user.id, user.email);
+    const res = {
+      name: user.name,
+      email: user.email,
+      token: this.generateToken(user.id, user.email).access_token,
+    };
+
+    return res;
   }
 
   async googleLogin(user: any) {
@@ -59,6 +69,7 @@ export class AuthService {
       const newUser = await this.prisma.user.create({
         data: {
           email: user.email,
+          name: user.name,
           password: '',
         },
       });
@@ -80,9 +91,47 @@ export class AuthService {
     };
   }
 
-  async getUsers(){
-    const users = await this.prisma.user.findMany({})
-    return users
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      throw new HttpException('Email not found', HttpStatus.NOT_FOUND);
+    }
+
+    const otp = this.generateOtp();
+    await this.sendOtpEmail(email, otp);
+
+    // Save OTP in database or cache for verification (e.g., Redis)
+    await this.prisma.otp.create({
+      data: { email, otp, expiresAt: new Date(Date.now() + 15 * 60 * 1000) }, // Expires in 15 minutes
+    });
+
+    return { message: 'OTP sent to your email address' };
   }
-  
+  private generateOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  }
+
+  private async sendOtpEmail(email: string, otp: string) {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // Or any email service you use
+      auth: {
+        user: 'your-email@gmail.com',
+        pass: 'your-email-password',
+      },
+    });
+
+    const mailOptions = {
+      from: 'no-reply@yourdomain.com',
+      to: email,
+      subject: 'Password Reset OTP',
+      text: `Your OTP for password reset is ${otp}. It is valid for 15 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+  }
+  async getUsers() {
+    const users = await this.prisma.user.findMany({});
+    return users;
+  }
 }
