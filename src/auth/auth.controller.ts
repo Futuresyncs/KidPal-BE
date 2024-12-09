@@ -9,7 +9,13 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { LogInUserDto,SignUpUserDto,ForgotPasswordDto } from './dto/auth-user-dto';
+import {
+  LogInUserDto,
+  SignUpUserDto,
+  ForgotPasswordDto,
+  VerifyOtpDto,
+  ResetPasswordDto,
+} from './dto/auth-user-dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -33,8 +39,21 @@ export class AuthController {
   async forgotPassword(@Body(ValidationPipe) body: ForgotPasswordDto) {
     return this.authService.forgotPassword(body.email);
   }
+
+  @Post('verifyOtp')
+  async verifyOtp(@Body(ValidationPipe) body: VerifyOtpDto) {
+    return this.authService.verifyOtp(body.userId, body.otp);
+  }
+
+  @Post('resetPassword')
+  async resetPassword(
+    @Body(ValidationPipe) body: ResetPasswordDto,
+  ) {
+    return this.authService.resetPassword(body.token, body.newPassword);
+  }
+
   @Get('users')
-  // @UseGuards(AuthGuard('jwt')) // Trigger Google OAuth
+  // @UseGuards(AuthGuard('jwt')) 
   async getUsers() {
     return this.authService.getUsers();
   }

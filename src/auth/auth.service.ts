@@ -103,27 +103,37 @@ export class AuthService {
 
     // Save OTP in database or cache for verification (e.g., Redis)
     await this.prisma.otp.create({
-      data: { email, otp, expiresAt: new Date(Date.now() + 15 * 60 * 1000) }, // Expires in 15 minutes
+      data: {
+        userId: user.id,
+        otp,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      }, // Expires in 15 minutes
     });
 
-    return { message: 'OTP sent to your email address' };
-  }
-  
-  private generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    return {
+      message: 'OTP sent to your email address',
+      OTPExpiresAt:'15 mins',
+      userId: user.id,
+      name: user.name,
+      email,
+    };
   }
 
+  private generateOtp(): string {
+    return Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit OTP
+  }
+  
   private async sendOtpEmail(email: string, otp: string) {
     const transporter = nodemailer.createTransport({
       service: 'gmail', // Or any email service you use
       auth: {
-        user: 'your-email@gmail.com',
-        pass: 'your-email-password',
+        user: 'nk104626@gmail.com',
+        pass: 'prhu qazo clxl fmwy',
       },
     });
 
     const mailOptions = {
-      from: 'no-reply@yourdomain.com',
+      from: 'nk104626@gmail.com',
       to: email,
       subject: 'Password Reset OTP',
       text: `Your OTP for password reset is ${otp}. It is valid for 15 minutes.`,
@@ -131,6 +141,67 @@ export class AuthService {
 
     await transporter.sendMail(mailOptions);
   }
+
+  async verifyOtp(userId: number, otp: string) {
+    const otpRecord = await this.prisma.otp.findUnique({
+      where: { userId },
+    });
+
+    if (!otpRecord) {
+      throw new HttpException('OTP not found or expired', HttpStatus.NOT_FOUND);
+    }
+
+    const now = new Date();
+    if (otpRecord.expiresAt < now) {
+      throw new HttpException('OTP has expired', HttpStatus.BAD_REQUEST);
+    }
+
+    if (otpRecord.otp !== otp) {
+      throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
+    }
+
+    // OTP is valid - Delete it from the database (optional for security)
+    await this.prisma.otp.delete({ where: { userId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    return {
+      message: 'OTP verified successfully',
+      token: this.generateToken(userId, user.email).access_token,
+    };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    try {
+      const decoded = this.jwtService.verify(token); // Decode the token
+      const { userId, email } = decoded;
+
+      // Ensure user exists
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (!user.id || user.email !== email) {
+        throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update the user's password
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+
+      return { message: 'Password reset successfully' };
+    } catch (error) {
+      throw new HttpException(
+        'Failed to reset password',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+
   async getUsers() {
     const users = await this.prisma.user.findMany({});
     return users;
