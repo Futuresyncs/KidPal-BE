@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateChildProfileDto } from './dto/CreateChildProfileDto';
 import { UpdateChildProfileDto } from './dto/UpdateChildProfileDto';
 import { PrismaClient } from '@prisma/client';
@@ -9,14 +9,27 @@ export class ChildProfileService {
 
   async create(createChildProfileDto: CreateChildProfileDto) {
     const { parent_id, nickName, age, character_id } = createChildProfileDto;
-    return this.prisma.child_Profile.create({
-      data: {
-        parent_id,
-        nickName,
-        age,
-        character_id,
-      },
-    });
+    try {
+      return await this.prisma.child_Profile.create({
+        data: {
+          parent_id,
+          nickName,
+          age,
+          character_id,
+        },
+      });
+    } catch (error) {
+      // Check for unique constraint violation
+      if (error.code === 'P2002' && error.meta?.target?.includes('nickName')) {
+        throw new HttpException(
+          'Nickname already in use. Please choose a different one.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+  
+      // Re-throw other errors
+      throw error;
+    }
   }
 
   async findAll() {

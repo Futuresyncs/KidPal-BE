@@ -51,7 +51,7 @@ export class AuthController {
   ) {
     return this.authService.resetPassword(body.token, body.newPassword);
   }
-
+  @UseGuards(AuthGuard('jwt'))
   @Get('users')
   // @UseGuards(AuthGuard('jwt')) 
   async getUsers() {

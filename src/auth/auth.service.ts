@@ -48,8 +48,13 @@ export class AuthService {
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid)
       throw new UnauthorizedException('Invalid email or password');
-
+    // Check if any entry in Child_Profile exists with parent_id matching the user.id
+    const hasChildProfile = await this.prisma.child_Profile.findFirst({
+      where: { parent_id: user.id },
+    });
     const res = {
+      isNewUser: !!hasChildProfile, 
+      id: user.id,
       name: user.name,
       email: user.email,
       token: this.generateToken(user.id, user.email).access_token,
@@ -112,7 +117,7 @@ export class AuthService {
 
     return {
       message: 'OTP sent to your email address',
-      OTPExpiresAt:'15 mins',
+      OTPExpiresAt: '15 mins',
       userId: user.id,
       name: user.name,
       email,
@@ -122,7 +127,7 @@ export class AuthService {
   private generateOtp(): string {
     return Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit OTP
   }
-  
+
   private async sendOtpEmail(email: string, otp: string) {
     const transporter = nodemailer.createTransport({
       service: 'gmail', // Or any email service you use
@@ -200,7 +205,6 @@ export class AuthService {
       );
     }
   }
-
 
   async getUsers() {
     const users = await this.prisma.user.findMany({});
