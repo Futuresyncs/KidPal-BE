@@ -20,9 +20,9 @@ export class ChildProfileService {
       });
     } catch (error) {
       // Check for unique constraint violation
-      if (error.code === 'P2002' && error.meta?.target?.includes('nickName')) {
+      if (error.code === 'P2002' && error.meta?.target?.includes('Child_Profile_parent_id_nickName_key')) {
         throw new HttpException(
-          'Nickname already in use. Please choose a different one.',
+          `Nickname "${nickName}" is already in use for this parent. Please choose a different nickname.`,
           HttpStatus.BAD_REQUEST,
         );
       }

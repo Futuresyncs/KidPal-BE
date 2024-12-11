@@ -31,13 +31,14 @@ model Report {
 model Child_Profile {
   id           Int      @id @default(autoincrement())
   parent_id    Int
-  nickName     String   @unique
+  nickName     String   
   age          Int
   character_id String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [parent_id], references: [id])
   report       Report[]
+  @@unique([parent_id, nickName])
 }
 
 model User {
