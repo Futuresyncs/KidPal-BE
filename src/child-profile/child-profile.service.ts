@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateChildProfileDto } from './dto/CreateChildProfileDto';
 import { UpdateChildProfileDto } from './dto/UpdateChildProfileDto';
 import { PrismaClient } from '@prisma/client';
@@ -20,13 +25,16 @@ export class ChildProfileService {
       });
     } catch (error) {
       // Check for unique constraint violation
-      if (error.code === 'P2002' && error.meta?.target?.includes('Child_Profile_parent_id_nickName_key')) {
+      if (
+        error.code === 'P2002' &&
+        error.meta?.target?.includes('Child_Profile_parent_id_nickName_key')
+      ) {
         throw new HttpException(
           `Nickname "${nickName}" is already in use for this parent. Please choose a different nickname.`,
           HttpStatus.BAD_REQUEST,
         );
       }
-  
+
       // Re-throw other errors
       throw error;
     }
@@ -57,12 +65,11 @@ export class ChildProfileService {
         },
       },
     });
-  
+
     if (!profile) {
       throw new NotFoundException(`Child Profile with ID ${id} not found`);
     }
-  
-    // Return only the profile and user email
+
     return {
       id: profile.id,
       nickName: profile.nickName,
@@ -70,10 +77,9 @@ export class ChildProfileService {
       character_id: profile.character_id,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
-      userEmail: profile.user.email, // Flatten the email for simplicity
+      userEmail: profile.user.email,
     };
   }
-  
 
   async update(id: number, updateChildProfileDto: UpdateChildProfileDto) {
     const profile = await this.prisma.child_Profile.findUnique({
