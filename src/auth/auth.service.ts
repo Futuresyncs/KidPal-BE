@@ -53,7 +53,8 @@ export class AuthService {
       where: { parent_id: user.id },
     });
     const res = {
-      isNewUser: !!hasChildProfile, 
+      isOldUser: !!hasChildProfile,
+      childId: hasChildProfile ? hasChildProfile.id : null,
       id: user.id,
       name: user.name,
       email: user.email,

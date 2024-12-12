@@ -43,12 +43,37 @@ export class ChildProfileService {
   async findOne(id: number) {
     const profile = await this.prisma.child_Profile.findUnique({
       where: { id },
+      select: {
+        id: true,
+        nickName: true,
+        age: true,
+        character_id: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            email: true, // Only fetch the email field from the User model
+          },
+        },
+      },
     });
+  
     if (!profile) {
       throw new NotFoundException(`Child Profile with ID ${id} not found`);
     }
-    return profile;
+  
+    // Return only the profile and user email
+    return {
+      id: profile.id,
+      nickName: profile.nickName,
+      age: profile.age,
+      character_id: profile.character_id,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+      userEmail: profile.user.email, // Flatten the email for simplicity
+    };
   }
+  
 
   async update(id: number, updateChildProfileDto: UpdateChildProfileDto) {
     const profile = await this.prisma.child_Profile.findUnique({

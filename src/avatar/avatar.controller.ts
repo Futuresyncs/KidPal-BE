@@ -11,4 +11,9 @@ export class AvatarController {
   async getAvatarList() {
     return this.avatarService.getAvatarList();
   }
+  @UseGuards(AuthGuard('jwt'))
+  @Get('avatarList')
+  async getAvatarListFromPublic() {
+    return this.avatarService.getAvatarListFromPublic();
+  }
 }
