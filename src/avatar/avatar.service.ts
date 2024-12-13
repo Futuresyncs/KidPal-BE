@@ -7,19 +7,39 @@ import { join } from 'path';
 export class AvatarService {
   // private prisma = new PrismaClient();
 
+  // async getAvatarListFromPublic() {
+  //   const folderPath = join(process.cwd(), 'public');
+  //   const files = readdirSync(folderPath).filter((file) =>
+  //     file.endsWith('.png'),
+  //   );
+
+  //   const namesArray = ['Lio','Ella','Zara','Mia','Finn','Jimmy']
+
+  //   return files.map((file, index) => ({
+  //     id: index + 1,
+  //     name: namesArray[index], 
+  //     url: `/public/${file}`, 
+  //   }));
+  // }
+
   async getAvatarListFromPublic() {
     const folderPath = join(process.cwd(), 'public');
-    const files = readdirSync(folderPath).filter((file) =>
-      file.endsWith('.png'),
-    );
+    const files = readdirSync(folderPath).filter((file) => file.endsWith('.png'));
 
-    const namesArray = ['Lio','Ella','Zara','Mia','Finn','Jimmy']
+    const namesArray = ['Lio', 'Ella', 'Zara', 'Mia', 'Finn', 'Jimmy'];
 
-    return files.map((file, index) => ({
-      id: index + 1,
-      name: namesArray[index], 
-      url: `/public/${file}`, 
-    }));
+    const avatars = namesArray.map((name, index) => {
+      const baseName = `avatar${index + 1}`;
+      return {
+        id: index + 1,
+        name,
+        url4x: files.includes(`${baseName}_4x.png`) ? `/public/${baseName}_4x.png` : null,
+        url3x: files.includes(`${baseName}_3x.png`) ? `/public/${baseName}_3x.png` : null,
+        url2x: files.includes(`${baseName}_2x.png`) ? `/public/${baseName}_2x.png` : null,
+      };
+    });
+
+    return avatars;
   }
   async getAvatarList() {
     return [
