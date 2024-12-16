@@ -33,7 +33,7 @@ export class AvatarService {
       return {
         id: index + 1,
         name,
-        url4x: files.includes(`${baseName}_4x.png`) ? `/public/${baseName}_4x.png` : null,
+        url: files.includes(`${baseName}_4x.png`) ? `/public/${baseName}_4x.png` : null,
         url3x: files.includes(`${baseName}_3x.png`) ? `/public/${baseName}_3x.png` : null,
         url2x: files.includes(`${baseName}_2x.png`) ? `/public/${baseName}_2x.png` : null,
       };

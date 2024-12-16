@@ -18,15 +18,15 @@ model Employee {
 }
 
 model Report {
-  id                Int           @id @default(autoincrement())
-  child_id          Int
-  session_summary   String
-  conversation_logs Json
-  progress_data     Json
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  child_profile     Child_Profile @relation(fields: [child_id], references: [id])
+  id          Int      @id @default(autoincrement())
+  image       String
+  description String
+  time        Int      // Time in seconds
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
+
 
 model Child_Profile {
   id           Int      @id @default(autoincrement())
@@ -37,7 +37,6 @@ model Child_Profile {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [parent_id], references: [id])
-  report       Report[]
   @@unique([parent_id, nickName])
 }
 

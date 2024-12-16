@@ -6,70 +6,40 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 export class ReportService {
   private prisma = new PrismaClient();
 
-  async create(report: CreateReportDto) {
-    // Validate if the provided child_id exists
-    const child = await this.prisma.child_Profile.findUnique({
-      where: { id: report.child_id },
-    });
-  
-    if (!child) {
-      throw new NotFoundException(`Child with ID ${report.child_id} does not exist`);
-    }
-  
-    // Proceed to create the report
-    const newReport = await this.prisma.report.create({
+  async endSession(sessionData: { time: number; date: string; image: string; description: string }) {
+    const { time, date, image, description } = sessionData;
+
+    // Save the session to the database
+    await this.prisma.report.create({
       data: {
-        child_id: child.id, // Ensure you're referencing the correct `id`
-        session_summary: report.session_summary,
-        conversation_logs: JSON.parse(JSON.stringify(report.conversation_logs)),
-        progress_data: JSON.parse(JSON.stringify(report.progress_data)),
+        time,
+        date: new Date(date),
+        image,
+        description,
+      }, 
+    });
+
+    // Calculate total usage for the given date
+    const totalUsage = await this.prisma.report.aggregate({
+      _sum: {
+        time: true,
       },
-    });
-  
-    return {
-      message: 'Report created successfully',
-      report: newReport,
-    };
-  }
-  
-
-  async getAll() {
-    const reports = await this.prisma.report.findMany();
-    return reports;
-  }
-
-  async update(id: number, report: UpdateReportDto) {
-    const updatedReport = await this.prisma.report.update({
-      where: { id },
-      data: {
-        child_id: report.child_id,
-        session_summary: report.session_summary,
-        conversation_logs: report.conversation_logs
-          ? JSON.parse(JSON.stringify(report.conversation_logs))
-          : undefined,
-        progress_data: report.progress_data
-          ? JSON.parse(JSON.stringify(report.progress_data))
-          : undefined,
+      where: {
+        date: {
+          gte: new Date(date),
+          lt: new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000), // Same day
+        },
       },
     });
 
-    return {
-      message: 'Report updated successfully',
-      report: updatedReport,
-    };
-  }
+    const totalTime = totalUsage._sum.time || 0;
+    const totalHours = (totalTime / 3600).toFixed(2);
 
-  async delete(id: number) {
-    try {
-      await this.prisma.report.delete({
-        where: { id },
-      });
-      return { message: 'Report deleted successfully' };
-    } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-        throw new NotFoundException(`Report with ID ${id} not found`);
-      }
-      throw error; // Re-throw the error if it's not the expected one
-    }
+    // Return the session details along with total usage
+    return {
+      image,
+      description,
+      totalHours: `${totalHours} hours`,
+    };
   }
 }
