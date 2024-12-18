@@ -32,7 +32,15 @@ export class AuthService {
       data: { name, email, password: hashedPassword },
     });
 
+    // Check if any entry in Child_Profile exists with parent_id matching the user.id
+    const hasChildProfile = await this.prisma.child_Profile.findFirst({
+      where: { parent_id: user.id },
+    });
+
     const res = {
+      isOldUser: !!hasChildProfile,
+      childId: hasChildProfile ? hasChildProfile.id : null,
+      id: user.id,
       name: user.name,
       email: user.email,
       token: this.generateToken(user.id, user.email).access_token,
@@ -148,35 +156,66 @@ export class AuthService {
     await transporter.sendMail(mailOptions);
   }
 
-  async verifyOtp(userId: number, otp: string) {
-    const otpRecord = await this.prisma.otp.findUnique({
-      where: { userId },
-    });
+  // async verifyOtp(userId: number, otp: string) {
+  //   const otpRecord = await this.prisma.otp.findUnique({
+  //     where: { userId },
+  //   });
 
+  //   if (!otpRecord) {
+  //     throw new HttpException('OTP not found or expired', HttpStatus.NOT_FOUND);
+  //   }
+
+  //   const now = new Date();
+  //   if (otpRecord.expiresAt < now) {
+  //     throw new HttpException('OTP has expired', HttpStatus.BAD_REQUEST);
+  //   }
+
+  //   if (otpRecord.otp !== otp) {
+  //     throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
+  //   }
+
+  //   // OTP is valid - Delete it from the database (optional for security)
+  //   await this.prisma.otp.delete({ where: { userId } });
+  //   const user = await this.prisma.user.findUnique({
+  //     where: { id: userId },
+  //   });
+
+  //   return {
+  //     message: 'OTP verified successfully',
+  //     token: this.generateToken(userId, user.email).access_token,
+  //   };
+  // }
+  async verifyOtp(userId: number, otp: string) {
+    const otpRecord = await this.prisma.otp.findFirst({
+      where: {
+        userId,
+        otp,
+      },
+    });
+  
     if (!otpRecord) {
       throw new HttpException('OTP not found or expired', HttpStatus.NOT_FOUND);
     }
-
+  
     const now = new Date();
-    if (otpRecord.expiresAt < now) {
-      throw new HttpException('OTP has expired', HttpStatus.BAD_REQUEST);
-    }
-
-    if (otpRecord.otp !== otp) {
-      throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
-    }
-
+     // Ensure the expiration check is consistent with UTC
+  if (new Date(otpRecord.expiresAt).getTime() < now.getTime()) {
+    throw new HttpException('OTP has expired', HttpStatus.BAD_REQUEST);
+  }
+  
     // OTP is valid - Delete it from the database (optional for security)
-    await this.prisma.otp.delete({ where: { userId } });
+    await this.prisma.otp.deleteMany({ where: { userId } });
+  
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
-
+  
     return {
       message: 'OTP verified successfully',
       token: this.generateToken(userId, user.email).access_token,
     };
   }
+  
 
   async resetPassword(token: string, newPassword: string) {
     try {
