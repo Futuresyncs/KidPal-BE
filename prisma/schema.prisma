@@ -19,6 +19,7 @@ model Employee {
 
 model Report {
   id          Int      @id @default(autoincrement())
+  userId      Int
   image       String
   description String
   name        String

@@ -1,13 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateReportDto ,UpdateReportDto} from './dto/create-report-dto';
 import { PrismaClient } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 @Injectable()
 export class ReportService {
   private prisma = new PrismaClient();
 
-  async endSession(sessionData: { time: number; date: string; image: string; description: string ,name:string}) {
-    const {  time, date, image, description,name } = sessionData;
+  async endSession(sessionData: { time: number; date: string; image: string; description: string ,name:string,userId: number;}) {
+    const {  time, date, image, description,name,userId } = sessionData;
 
     // Save the session to the database
     await this.prisma.report.create({
@@ -17,6 +16,7 @@ export class ReportService {
         image,
         description,
         name,
+        userId
       }, 
     });
 
@@ -47,13 +47,19 @@ export class ReportService {
 
 
 
-   // Fetch all reports
-   async getAllReports() {
-    const reports = await this.prisma.report.findMany({
-      orderBy: { date: 'desc' },
-    });
-    return reports;
+ // Fetch all reports for a specific user
+ async getAllReports(userId: number) {
+  const reports = await this.prisma.report.findMany({
+    where: { userId }, 
+    orderBy: { date: 'desc' },
+  });
+
+  if (reports.length === 0) {
+    throw new NotFoundException(`No reports found for userId: ${userId}`);
   }
+
+  return reports;
+}
 
 
   // Fetch reports for a specific date
