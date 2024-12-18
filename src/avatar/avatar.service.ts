@@ -17,14 +17,16 @@ export class AvatarService {
 
   //   return files.map((file, index) => ({
   //     id: index + 1,
-  //     name: namesArray[index], 
-  //     url: `/public/${file}`, 
+  //     name: namesArray[index],
+  //     url: `/public/${file}`,
   //   }));
   // }
 
   async getAvatarListFromPublic() {
     const folderPath = join(process.cwd(), 'public');
-    const files = readdirSync(folderPath).filter((file) => file.endsWith('.png'));
+    const files = readdirSync(folderPath).filter((file) =>
+      file.endsWith('.png'),
+    );
 
     const namesArray = ['Lio', 'Ella', 'Zara', 'Mia', 'Finn', 'Jimmy'];
 
@@ -33,13 +35,43 @@ export class AvatarService {
       return {
         id: index + 1,
         name,
-        url: files.includes(`${baseName}_4x.png`) ? `/public/${baseName}_4x.png` : null,
-        url3x: files.includes(`${baseName}_3x.png`) ? `/public/${baseName}_3x.png` : null,
-        url2x: files.includes(`${baseName}_2x.png`) ? `/public/${baseName}_2x.png` : null,
+        url: files.includes(`${baseName}_4x.png`)
+          ? `/public/${baseName}_4x.png`
+          : null,
+        url3x: files.includes(`${baseName}_3x.png`)
+          ? `/public/${baseName}_3x.png`
+          : null,
+        url2x: files.includes(`${baseName}_2x.png`)
+          ? `/public/${baseName}_2x.png`
+          : null,
       };
     });
 
     return avatars;
+  }
+  async getAnimalListFromPublic() {
+    const folderPath = join(process.cwd(), 'public');
+    console.log(`Current directory: ${process.cwd()}`);
+    console.log(`Folder Path: ${folderPath}`);
+    const files = readdirSync(folderPath).filter((file) =>
+      file.endsWith('.png'),
+    );
+
+
+    const namesArray = ['Lio', 'Ella', 'Zara', 'Mia', 'Finn', 'Jimmy'];
+
+    const animals = namesArray.map((name, index) => {
+      const baseName = `animal${index + 1}`;
+      return {
+        id: index + 1,
+        name,
+        url: files.includes(`${baseName}.png`)
+          ? `/public/${baseName}.png`
+          : null,
+      };
+    });
+
+    return animals;
   }
   async getAvatarList() {
     return [

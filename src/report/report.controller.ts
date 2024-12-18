@@ -7,7 +7,7 @@ export class ReportController {
 
   @Post('endSession')
   async endSession(@Body() body: any) {
-    const { time, date, description, image } = body;
+    const { time, date, description, image ,name} = body;
 
     // Pass data to the service for processing
     return this.reportService.endSession({
@@ -15,7 +15,19 @@ export class ReportController {
       date,
       image,
       description,
+      name
     });
+  }
+
+
+  @Get('all')
+  async getAllReports() {
+    return this.reportService.getAllReports();
+  }
+
+  @Get('byDate/:date')
+  async getReportsByDate(@Param('date') date: string) {
+    return this.reportService.getReportsByDate(date);
   }
   
 

@@ -21,6 +21,7 @@ model Report {
   id          Int      @id @default(autoincrement())
   image       String
   description String
+  name        String
   time        Int      // Time in seconds
   date        DateTime
   createdAt   DateTime @default(now())

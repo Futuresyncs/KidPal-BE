@@ -6,8 +6,8 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 export class ReportService {
   private prisma = new PrismaClient();
 
-  async endSession(sessionData: { time: number; date: string; image: string; description: string }) {
-    const { time, date, image, description } = sessionData;
+  async endSession(sessionData: { time: number; date: string; image: string; description: string ,name:string}) {
+    const {  time, date, image, description,name } = sessionData;
 
     // Save the session to the database
     await this.prisma.report.create({
@@ -16,6 +16,7 @@ export class ReportService {
         date: new Date(date),
         image,
         description,
+        name,
       }, 
     });
 
@@ -37,9 +38,51 @@ export class ReportService {
 
     // Return the session details along with total usage
     return {
+      name,
       image,
       description,
       totalHours: `${totalHours} hours`,
+    };
+  }
+
+
+
+   // Fetch all reports
+   async getAllReports() {
+    const reports = await this.prisma.report.findMany({
+      orderBy: { date: 'desc' },
+    });
+    return reports;
+  }
+
+
+  // Fetch reports for a specific date
+  async getReportsByDate(date: string) {
+    const startDate = new Date(date);
+    const endDate = new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000); // Next day
+
+    const reports = await this.prisma.report.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      orderBy: { date: 'desc' },
+    });
+
+    if (reports.length === 0) {
+      throw new NotFoundException(`No reports found for date: ${date}`);
+    }
+
+    // Sum the total time for the date
+    const totalTime = reports.reduce((acc, report) => acc + report.time, 0);
+    const totalHours = (totalTime / 3600).toFixed(2);
+
+    return {
+      date,
+      totalHours: `${totalHours} hours`,
+      reports,
     };
   }
 }
