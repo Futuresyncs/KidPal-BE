@@ -5,12 +5,12 @@ import {
   Param,
   Post,
   // ParseIntPipe,
-  // ValidationPipe,
+  ValidationPipe,
   UseGuards,
   Req,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
-// import { CreateReportDto, UpdateReportDto } from './dto/create-report-dto';
+import { EndSessionDto } from './dto/create-report-dto';
 import { AuthGuard } from '@nestjs/passport';
 @Controller('report')
 export class ReportController {
@@ -18,12 +18,12 @@ export class ReportController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('endSession')
-  async endSession(@Body() body: any, @Req() req: any) {
+  async endSession(@Body(ValidationPipe) body: EndSessionDto, @Req() req: any) {
     const { time, date, description, image, name } = body;
     const { userId } = req.user;
     // Pass data to the service for processing
     return this.reportService.endSession({
-      time: parseInt(time, 10),
+      time: time,
       date,
       image,
       description,

@@ -73,6 +73,7 @@ export class AuthService {
   }
 
   async googleLogin(user: any) {
+    debugger
     console.log(user);
     const existingUser = await this.prisma.user.findUnique({
       where: { email: user.email },
@@ -156,35 +157,7 @@ export class AuthService {
     await transporter.sendMail(mailOptions);
   }
 
-  // async verifyOtp(userId: number, otp: string) {
-  //   const otpRecord = await this.prisma.otp.findUnique({
-  //     where: { userId },
-  //   });
 
-  //   if (!otpRecord) {
-  //     throw new HttpException('OTP not found or expired', HttpStatus.NOT_FOUND);
-  //   }
-
-  //   const now = new Date();
-  //   if (otpRecord.expiresAt < now) {
-  //     throw new HttpException('OTP has expired', HttpStatus.BAD_REQUEST);
-  //   }
-
-  //   if (otpRecord.otp !== otp) {
-  //     throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
-  //   }
-
-  //   // OTP is valid - Delete it from the database (optional for security)
-  //   await this.prisma.otp.delete({ where: { userId } });
-  //   const user = await this.prisma.user.findUnique({
-  //     where: { id: userId },
-  //   });
-
-  //   return {
-  //     message: 'OTP verified successfully',
-  //     token: this.generateToken(userId, user.email).access_token,
-  //   };
-  // }
   async verifyOtp(userId: number, otp: string) {
     const otpRecord = await this.prisma.otp.findFirst({
       where: {

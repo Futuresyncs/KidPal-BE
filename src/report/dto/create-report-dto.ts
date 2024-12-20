@@ -1,71 +1,23 @@
-import { IsString, IsNotEmpty, IsArray, ValidateNested, IsInt,IsOptional } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsNotEmpty, IsInt } from 'class-validator';
 
-export class CreateReportDto {
+export class EndSessionDto {
+  @IsString()
+  @IsNotEmpty()
+  image: string;
+
+  @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
   @IsInt()
-  child_id: number;
-
-  @IsString()
   @IsNotEmpty()
-  session_summary: string;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ConversationLogsDto)
-  conversation_logs: ConversationLogsDto[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProgressDataDto)
-  progress_data: ProgressDataDto[];
-}
-
-export class UpdateReportDto {
-  @IsInt()
-  @IsOptional()
-  child_id?: number;
-
-  @IsString()
-  @IsOptional()
-  session_summary?: string;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ConversationLogsDto)
-  @IsOptional()
-  conversation_logs?: ConversationLogsDto[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProgressDataDto)
-  @IsOptional()
-  progress_data?: ProgressDataDto[];
-}
-
-export class ProgressDataDto {
-  @IsString()
-  @IsNotEmpty()
-  user_id: string;
-
-  @IsString()
-  @IsNotEmpty()
-  question: string;
-
-  @IsString()
-  @IsNotEmpty()
-  content: string;
+  time: number; // Time in seconds
 
   @IsString()
   @IsNotEmpty()
   date: string;
-}
-
-export class ConversationLogsDto {
-  @IsString()
-  @IsNotEmpty()
-  question: string;
-
-  @IsString()
-  @IsNotEmpty()
-  answer: string;
 }

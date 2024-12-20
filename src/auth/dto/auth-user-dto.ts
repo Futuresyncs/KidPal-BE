@@ -15,6 +15,17 @@ export class SignUpUserDto {
   @IsEmail()
   email: string;
 }
+export class SocialAuthDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+  @IsNumber()
+  @IsNotEmpty()
+  userId: number;
+}
 export class LogInUserDto {
   @IsString()
   @IsNotEmpty()
