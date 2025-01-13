@@ -68,6 +68,17 @@ model Otp {
   userId    Int     
 }
 
+model ModalUsage {
+  id          Int      @id @default(autoincrement())
+  parentName  String
+  childName   String
+  modelName   String
+  duration    Int      // Duration in seconds
+  userId    Int
+  createdAt   DateTime @default(now())
+}
+
+
 enum Role {
   Viewer
   Admin

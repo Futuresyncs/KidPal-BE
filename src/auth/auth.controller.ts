@@ -6,6 +6,7 @@ import {
   Req,
   UseGuards,
   ValidationPipe,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -16,6 +17,7 @@ import {
   VerifyOtpDto,
   ResetPasswordDto,
 } from './dto/auth-user-dto';
+import { Response } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -46,21 +48,26 @@ export class AuthController {
   }
 
   @Post('resetPassword')
-  async resetPassword(
-    @Body(ValidationPipe) body: ResetPasswordDto,
-  ) {
+  async resetPassword(@Body(ValidationPipe) body: ResetPasswordDto) {
     return this.authService.resetPassword(body.token, body.newPassword);
   }
   @UseGuards(AuthGuard('jwt'))
   @Get('users')
-  // @UseGuards(AuthGuard('jwt')) 
+  // @UseGuards(AuthGuard('jwt'))
   async getUsers() {
     return this.authService.getUsers();
   }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google')) // Handle Google OAuth callback
-  googleAuthRedirect(@Req() req) {
-    return this.authService.googleLogin(req.user); // Process the user info
+  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+    const response = await this.authService.googleLogin(req.user);
+  
+    // Construct the redirect URL with additional query parameters
+    const redirectUrl = `mykidpal://auth?token=${response.token}&isOldUser=${response.isOldUser}&childId=${response.childId}&id=${response.id}&name=${encodeURIComponent(response.name)}&email=${encodeURIComponent(response.email)}`;
+  
+    // Redirect to the mobile app with the constructed URL
+    res.redirect(redirectUrl);
   }
 }
+// return this.authService.googleLogin(req.user);

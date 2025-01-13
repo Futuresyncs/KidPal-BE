@@ -73,7 +73,6 @@ export class AuthService {
   }
 
   async googleLogin(user: any) {
-    debugger
     console.log(user);
     const existingUser = await this.prisma.user.findUnique({
       where: { email: user.email },
@@ -84,18 +83,43 @@ export class AuthService {
       const newUser = await this.prisma.user.create({
         data: {
           email: user.email,
-          name: user.name,
+          name: user.firstName,
           password: '',
         },
       });
 
       const message = `${user.firstName} successfully added in db`;
 
-      return this.generateToken(newUser.id, newUser.email, message);
+      const hasChildProfile = await this.prisma.child_Profile.findFirst({
+        where: { parent_id: newUser.id },
+      });
+      const res = {
+        isOldUser: !!hasChildProfile,
+        childId: hasChildProfile ? hasChildProfile.id : null,
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        token: this.generateToken(newUser.id, newUser.email).access_token,
+        message,
+      };
+
+      return res;
     }
 
     // If the user exists, generate a token
-    return this.generateToken(existingUser.id, existingUser.email);
+    const hasChildProfile = await this.prisma.child_Profile.findFirst({
+      where: { parent_id: existingUser.id },
+    });
+    const res = {
+      isOldUser: !!hasChildProfile,
+      childId: hasChildProfile ? hasChildProfile.id : null,
+      id: existingUser.id,
+      name: existingUser.name,
+      email: existingUser.email,
+      token: this.generateToken(existingUser.id, existingUser.email)
+        .access_token,
+    };
+    return res
   }
 
   private generateToken(userId: number, email: string, message?: string) {
@@ -157,7 +181,6 @@ export class AuthService {
     await transporter.sendMail(mailOptions);
   }
 
-
   async verifyOtp(userId: number, otp: string) {
     const otpRecord = await this.prisma.otp.findFirst({
       where: {
@@ -165,30 +188,29 @@ export class AuthService {
         otp,
       },
     });
-  
+
     if (!otpRecord) {
       throw new HttpException('OTP not found or expired', HttpStatus.NOT_FOUND);
     }
-  
+
     const now = new Date();
-     // Ensure the expiration check is consistent with UTC
-  if (new Date(otpRecord.expiresAt).getTime() < now.getTime()) {
-    throw new HttpException('OTP has expired', HttpStatus.BAD_REQUEST);
-  }
-  
+    // Ensure the expiration check is consistent with UTC
+    if (new Date(otpRecord.expiresAt).getTime() < now.getTime()) {
+      throw new HttpException('OTP has expired', HttpStatus.BAD_REQUEST);
+    }
+
     // OTP is valid - Delete it from the database (optional for security)
     await this.prisma.otp.deleteMany({ where: { userId } });
-  
+
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
-  
+
     return {
       message: 'OTP verified successfully',
       token: this.generateToken(userId, user.email).access_token,
     };
   }
-  
 
   async resetPassword(token: string, newPassword: string) {
     try {
@@ -220,7 +242,17 @@ export class AuthService {
   }
 
   async getUsers() {
-    const users = await this.prisma.user.findMany({});
-    return users;
+    const users = await this.prisma.user.findMany({
+      include: {
+        child_Profile: {
+          take: 1, // Fetch only the first child profile for each user
+        },
+      },
+    });
+    return users.map(user => ({
+      ...user,
+      child_Profile: user.child_Profile[0] || null, // Return the first child or null if none exist
+    }));
   }
+  
 }
