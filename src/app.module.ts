@@ -12,9 +12,10 @@ import { AvatarController } from './avatar/avatar.controller';
 import { AvatarService } from './avatar/avatar.service';
 import { ReportModule } from './report/report.module';
 import { ChildProfileModule } from './child-profile/child-profile.module';
+import { SelectedCharacterModule } from './selected-character/selected-character.module';
 
 @Module({
-  imports: [UsersModule, PrismaModule, AuthModule, ReportModule, ChildProfileModule],
+  imports: [UsersModule, PrismaModule, AuthModule, ReportModule, ChildProfileModule, SelectedCharacterModule],
   controllers: [AppController,ProfileController, AudioController,AvatarController],
   providers: [AppService, JwtStrategyService, AudioService,AvatarService],
 })
