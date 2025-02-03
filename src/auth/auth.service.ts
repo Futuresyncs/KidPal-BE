@@ -119,7 +119,7 @@ export class AuthService {
       token: this.generateToken(existingUser.id, existingUser.email)
         .access_token,
     };
-    return res
+    return res;
   }
 
   private generateToken(userId: number, email: string, message?: string) {
@@ -249,10 +249,45 @@ export class AuthService {
         },
       },
     });
-    return users.map(user => ({
+    return users.map((user) => ({
       ...user,
       child_Profile: user.child_Profile[0] || null, // Return the first child or null if none exist
     }));
   }
-  
+
+  // aple
+
+  async appleLogin(user: any) {
+    // Find user in DB
+    let existingUser = await this.prisma.user.findUnique({
+      where: { email: user.email },
+    });
+
+    if (!existingUser) {
+      existingUser = await this.prisma.user.create({
+        data: {
+          email: user.email,
+          name: user.name || 'Apple User',
+          password: '',
+        },
+      });
+    }
+
+    // Generate JWT
+    const token = this.jwtService.sign({
+      id: existingUser.id,
+      email: existingUser.email,
+    });
+    const hasChildProfile = await this.prisma.child_Profile.findFirst({
+      where: { parent_id: existingUser.id },
+    });
+    return {
+      token,
+      isOldUser: !!existingUser,
+      childId: hasChildProfile ? hasChildProfile.id : null,
+      id: existingUser.id,
+      name: existingUser.name,
+      email: existingUser.email,
+    };
+  }
 }

@@ -62,12 +62,27 @@ export class AuthController {
   @UseGuards(AuthGuard('google')) // Handle Google OAuth callback
   async googleAuthRedirect(@Req() req, @Res() res: Response) {
     const response = await this.authService.googleLogin(req.user);
-  
+
     // Construct the redirect URL with additional query parameters
     const redirectUrl = `mykidpal://auth?token=${response.token}&isOldUser=${response.isOldUser}&childId=${response.childId}&id=${response.id}&name=${encodeURIComponent(response.name)}&email=${encodeURIComponent(response.email)}`;
-  
+
     // Redirect to the mobile app with the constructed URL
     res.redirect(redirectUrl);
   }
+
+  // apple auth
+  @Get('apple')
+  @UseGuards(AuthGuard('apple'))
+  async appleAuth(@Req() req) {}
+
+  @Post('apple/callback')
+  @UseGuards(AuthGuard('apple'))
+  async appleAuthRedirect(@Req() req, @Res() res: Response) {
+    // const response = await this.authService.appleLogin(req.user);
+    console.log('Request received at /auth/apple/callback:', req.body);
+  
+    // const redirectUrl = `mykidpal://auth?token=${response.token}&isOldUser=${response.isOldUser}&childId=${response.childId}&id=${response.id}&name=${encodeURIComponent(response.name)}&email=${encodeURIComponent(response.email)}`;
+  
+    // res.redirect(redirectUrl);
+  }
 }
-// return this.authService.googleLogin(req.user);
